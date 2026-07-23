@@ -11,6 +11,6 @@
   },
   "dependencies": {
     "@whiskeysockets/baileys": "6.7.23",
-    ...
+    
   }
 }
