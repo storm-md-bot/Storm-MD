@@ -27,8 +27,8 @@ global.ownerName = 'Krishu';
 global.apiKeys = {
   gemini: 'AQ.Ab8RN6Lqz3GwHf1gJiZgTUDPZ09m7SF26so6CQ50fISJCUfl7g', // 🔑 GET FREE: https://aistudio.google.com/apikey
   openroute: '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', // 🔑 GET FREE: https://openrouter.ai/keys  
-  removebg: '',               // optional
-  weather: ''                 // optional
+  removebg: 'CanhJFceWMz4NgNy1WqBr4QQ',               // optional
+  weather: '08f1d261bff8466f99a145653262307'                 // optional
 };
 
 // 🤖 FEATURE TOGGLES
