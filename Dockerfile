@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine    # ← 18→20 karo
 
 WORKDIR /app
 
