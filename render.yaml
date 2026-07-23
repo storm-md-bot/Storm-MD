@@ -6,6 +6,6 @@ services:
     startCommand: node index.js
     envVars:
       - key: NODE_VERSION
-        value: 18.17.0
+        value: 20.11.0     # ← CHANGE FROM 18.17.0 TO 20.11.0
       - key: PORT
         value: 3000
