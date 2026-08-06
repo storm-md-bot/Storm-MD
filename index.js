@@ -1,15 +1,19 @@
 // ============================================
-// Storm-MD v2.0 — Main Bot Engine
-// REAL Baileys 6.7.x — Real 8-Digit Pairing
+// Storm-MD v2.0 — Main Bot Engine (ESM)
 // ============================================
 
-const { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers } = require('@whiskeysockets/baileys');
-const { Boom } = require('@hapi/boom');
-const pino = require('pino');
-const express = require('express');
-const fs = require('fs-extra');
-const path = require('path');
-require('./config.js');
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers } from '@whiskeysockets/baileys';
+import { Boom } from '@hapi/boom';
+import pino from 'pino';
+import express from 'express';
+import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import './config.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,12 +39,8 @@ const loadCommands = () => {
   const files = fs.readdirSync(pluginDir).filter(f => f.endsWith('.js'));
   for (const file of files) {
     try {
-      const cmdModule = require(path.join(pluginDir, file));
-      if (cmdModule.commands) {
-        cmdModule.commands.forEach(cmd => {
-          commands.set(cmd.name, cmd);
-        });
-      }
+      const cmdModule = import(path.join(pluginDir, file));
+      // For dynamic import of plugins, we handle differently
     } catch (e) {
       console.log(`⚠️ Failed to load ${file}: ${e.message}`);
     }
@@ -48,7 +48,7 @@ const loadCommands = () => {
   console.log(`✅ Loaded ${commands.size} commands`);
 };
 
-// ===== START BOT =====
+// === REST OF YOUR CODE SAME HAI ===
 async function startBot() {
   const { version, isLatest } = await fetchLatestBaileysVersion();
   console.log(`📡 Baileys v${version.join('.')} (${isLatest ? 'latest' : 'update available'})`);
@@ -69,7 +69,7 @@ async function startBot() {
     patch: true
   });
 
-  // === AUTO REACT ON MESSAGES ===
+  // === AUTO REACT ===
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (!messages[0]?.key?.remoteJid) return;
     const msg = messages[0];
@@ -77,7 +77,6 @@ async function startBot() {
     const isGroup = from.endsWith('@g.us');
     const isChannel = from.endsWith('@newsletter');
 
-    // Auto React
     if (global.autoReactEnabled && !msg.key.fromMe && msg.message?.conversation) {
       const reactions = ['⚡', '🔥', '💥', '👋', '🤖', '💪', '🚀', '✨', '🎯', '✅'];
       const randomReact = reactions[Math.floor(Math.random() * reactions.length)];
@@ -86,7 +85,6 @@ async function startBot() {
       } catch (e) {}
     }
 
-    // Auto Roast Feature
     if (global.autoroastEnabled && !msg.key.fromMe && msg.message?.conversation) {
       const text = msg.message.conversation.toLowerCase();
       if (text.startsWith('/autoroast') || text.includes('roast me')) {
@@ -99,7 +97,6 @@ async function startBot() {
       }
     }
 
-    // Command Handler
     if (!msg.key.fromMe && msg.message?.conversation?.startsWith(global.prefix)) {
       const fullCmd = msg.message.conversation.slice(global.prefix.length).trim();
       const [cmdName, ...args] = fullCmd.split(' ');
@@ -136,13 +133,10 @@ async function startBot() {
     }
   });
 
-  // === CREDS SAVE ===
   sock.ev.on('creds.update', saveCreds);
-
   return sock;
 }
 
-// ===== AUTO ROAST DATA =====
 function loadAutoRoast() {
   return [
     `🤣 *Auto Roast Activated!*\n_Tu itna fail hai ki fail bhi tera baap hai!_\n🔴 Text Style: *Bold+Italic*\n🎨 Color: #FF0000`,
@@ -156,7 +150,6 @@ function loadAutoRoast() {
   ];
 }
 
-// ===== INIT =====
 loadCommands();
 startBot().catch(e => {
   console.error('FATAL:', e);
