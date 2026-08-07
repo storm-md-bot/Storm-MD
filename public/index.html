@@ -1,137 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Storm-MD v2.0</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: white;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .container {
-      text-align: center;
-      padding: 2rem;
-      max-width: 800px;
-    }
-    .logo {
-      font-size: 4rem;
-      margin-bottom: 1rem;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-    }
-    h1 {
-      font-size: 2.5rem;
-      background: linear-gradient(45deg, #f093fb, #f5576c, #4facfe);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 0.5rem;
-    }
-    .version {
-      color: #888;
-      margin-bottom: 2rem;
-      font-size: 1.1rem;
-    }
-    .status {
-      display: inline-block;
-      padding: 0.5rem 1.5rem;
-      border-radius: 50px;
-      background: rgba(0, 255, 0, 0.1);
-      border: 1px solid rgba(0, 255, 0, 0.3);
-      color: #00ff88;
-      margin-bottom: 2rem;
-    }
-    .status-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      background: #00ff88;
-      border-radius: 50%;
-      margin-right: 8px;
-      animation: blink 1s infinite;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-    .info-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin-top: 2rem;
-    }
-    .info-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 15px;
-      padding: 1.5rem;
-      transition: transform 0.3s;
-    }
-    .info-card:hover { transform: translateY(-5px); }
-    .info-card .icon { font-size: 2rem; margin-bottom: 0.5rem; }
-    .info-card h3 { font-size: 1rem; color: #aaa; margin-bottom: 0.5rem; }
-    .info-card p { font-size: 1.2rem; font-weight: bold; }
-    .footer {
-      margin-top: 3rem;
-      color: #666;
-      font-size: 0.9rem;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>😈 Storm-MD — Demon God Edition</title>
+<style>
+:root{--bg1:#0b0b12;--bg2:#2a0505;--acc:#ff3b3b;--acc2:#ff9500;--txt:#f5f5f7;--card:rgba(255,255,255,.05)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:linear-gradient(135deg,var(--bg1),var(--bg2));color:var(--txt);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;overflow-x:hidden;transition:background .5s}
+#embers{position:fixed;inset:0;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:40px 20px;text-align:center}
+.logo{font-size:64px;animation:float 4s ease-in-out infinite;display:inline-block;filter:drop-shadow(0 0 25px var(--acc))}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+h1{font-size:clamp(34px,7vw,64px);font-weight:900;letter-spacing:4px;display:inline-block}
+.glitch{color:var(--acc);text-shadow:2px 0 #00e5ff,-2px 0 var(--acc2);animation:glitch 3s infinite}
+@keyframes glitch{0%,90%,100%{transform:none;opacity:1}92%{transform:translate(3px,-2px) skewX(5deg);opacity:.9}94%{transform:translate(-3px,2px);opacity:.95}96%{transform:translate(2px,1px)}}
+.sub{color:#888;letter-spacing:6px;text-transform:uppercase;font-size:13px;margin:10px 0 30px}
+.badge{display:inline-block;padding:8px 22px;border-radius:50px;border:1px solid var(--acc);color:var(--acc);background:rgba(255,60,60,.08);font-weight:700;margin-bottom:30px;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 6px var(--acc)}50%{box-shadow:0 0 22px var(--acc)}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0}
+.card{background:var(--card);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:22px 12px;transition:.3s;backdrop-filter:blur(8px)}
+.card:hover{transform:translateY(-6px);border-color:var(--acc);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.card .ic{font-size:32px;display:block;margin-bottom:8px}
+.card h3{color:#888;font-size:13px;text-transform:uppercase;letter-spacing:1px}
+.card p{font-size:22px;font-weight:800;background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.owner{display:flex;align-items:center;justify-content:center;gap:16px;margin:20px 0;flex-wrap:wrap}
+.avatar{width:64px;height:64px;border-radius:50%;background:conic-gradient(from 0deg,var(--acc),var(--acc2),var(--acc));padding:3px}
+.avatar div{width:100%;height:100%;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-size:30px}
+a.ig{color:var(--acc);text-decoration:none;font-weight:700;border:1px solid var(--acc);padding:8px 18px;border-radius:50px;transition:.3s;display:inline-block;margin-top:6px}
+a.ig:hover{background:var(--acc);color:#000}
+.btn{display:inline-block;margin:10px 6px;padding:14px 30px;border-radius:50px;font-weight:800;text-decoration:none;transition:.3s;color:#000}
+.btn-pair{background:linear-gradient(90deg,var(--acc),var(--acc2))}
+.btn-ghost{border:1px solid #555;color:#ccc;background:transparent}
+.btn:hover{transform:scale(1.05)}
+.themes{margin:40px 0}
+.themes h2{font-size:22px;margin-bottom:16px}
+.th-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.th{height:80px;border-radius:12px;cursor:pointer;border:2px solid transparent;transition:.3s;display:flex;align-items:flex-end;padding:8px;font-size:11px;font-weight:700;color:#fff;text-shadow:0 1px 3px #000;background-size:cover;background-position:center}
+.th:hover{transform:scale(1.05)}
+.th.on{border-color:#fff;box-shadow:0 0 16px rgba(255,255,255,.5)}
+footer{margin-top:50px;color:#555;font-size:13px}
+footer a{color:#888}
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo">⚡</div>
-    <h1>Storm-MD</h1>
-    <p class="version">v2.0.0 — Advanced WhatsApp Multi-Device Bot</p>
-    
-    <div class="status">
-      <span class="status-dot"></span>
-      Bot is ONLINE
-    </div>
-
-    <div class="info-grid">
-      <div class="info-card">
-        <div class="icon">📱</div>
-        <h3>Device</h3>
-        <p>Kali Linux</p>
-      </div>
-      <div class="info-card">
-        <div class="icon">⚡</div>
-        <h3>Commands</h3>
-        <p>1000+</p>
-      </div>
-      <div class="info-card">
-        <div class="icon">🛠️</div>
-        <h3>Tools</h3>
-        <p>30+</p>
-      </div>
-      <div class="info-card">
-        <div class="icon">🤖</div>
-        <h3>AI</h3>
-        <p>Enabled</p>
-      </div>
-      <div class="info-card">
-        <div class="icon">⏱️</div>
-        <h3>Uptime</h3>
-        <p>24/7</p>
-      </div>
-      <div class="info-card">
-        <div class="icon">🔗</div>
-        <h3>Status</h3>
-        <p>Connected ✅</p>
-      </div>
-    </div>
-    
-    <p class="footer">🔥 Made with ❤️ | Storm-MD v2.0 | 24/7 Running</p>
+<canvas id="embers"></canvas>
+<div class="wrap">
+  <div class="logo">😈</div>
+  <h1 class="glitch">STORM-MD</h1>
+  <div class="sub">Demon God Edition · v2.0</div>
+  <div class="badge">● ONLINE — 24/7</div>
+  <div class="grid">
+    <div class="card"><span class="ic">📱</span><h3>Device</h3><p>Kali Linux</p></div>
+    <div class="card"><span class="ic">⚡</span><h3>Commands</h3><p>1000+</p></div>
+    <div class="card"><span class="ic">🛠️</span><h3>Tools</h3><p>30+</p></div>
+    <div class="card"><span class="ic">🤖</span><h3>AI</h3><p>Enabled</p></div>
+    <div class="card"><span class="ic">⏱️</span><h3>Uptime</h3><p>24/7</p></div>
+    <div class="card"><span class="ic">🌍</span><h3>Countries</h3><p>All +225</p></div>
   </div>
+  <div class="owner">
+    <div class="avatar"><div>😈</div></div>
+    <div style="text-align:left">
+      <div style="font-weight:800;font-size:18px">Krishu</div>
+      <div style="color:#888;font-size:13px">Owner · Demon God</div>
+      <a class="ig" href="https://instagram.com/demon_god__2009" target="_blank">📸 @demon_god__2009</a>
+    </div>
+  </div>
+  <div style="margin:30px 0">
+    <a class="btn btn-pair" href="/pair">🔗 Link WhatsApp Number</a>
+    <a class="btn btn-ghost" href="https://github.com/storm-md-bot/Storm-MD" target="_blank">⭐ GitHub</a>
+  </div>
+  <div class="themes">
+    <h2>🎨 20+ Themes & Wallpapers</h2>
+    <div class="th-grid" id="themeGrid"></div>
+  </div>
+  <footer>⚡ Storm-MD v2.0 · Made with 😈 by Krishu · <a href="https://whatsapp.com/channel/0029VbDBRxE9WtC6LSR8MH0T" target="_blank">WhatsApp Channel</a></footer>
+</div>
+<script>
+const THEMES=[
+{name:'Demon God',bg1:'#0b0b12',bg2:'#2a0505',acc:'#ff3b3b',acc2:'#ff9500',wall:'radial-gradient(circle at 20% 20%, #ff3b3b22, transparent 50%), linear-gradient(135deg,#0b0b12,#2a0505)'},
+{name:'Blood Moon',bg1:'#12000a',bg2:'#4a0000',acc:'#ff0033',acc2:'#ff8800',wall:'radial-gradient(circle at 70% 30%, #ff003344, transparent 55%), linear-gradient(160deg,#12000a,#4a0000)'},
+{name:'Neon Cyan',bg1:'#001018',bg2:'#003344',acc:'#00ffff',acc2:'#00aaff',wall:'linear-gradient(135deg,#001018,#003344)'},
+{name:'Matrix',bg1:'#000a00',bg2:'#003300',acc:'#00ff41',acc2:'#aaff00',wall:'repeating-linear-gradient(0deg,#00ff4111 0 2px,transparent 2px 6px),linear-gradient(180deg,#000a00,#003300)'},
+{name:'Purple Haze',bg1:'#0a0015',bg2:'#2a004d',acc:'#a855f7',acc2:'#ec4899',wall:'linear-gradient(135deg,#0a0015,#2a004d)'},
+{name:'Ocean',bg1:'#001020',bg2:'#003060',acc:'#00c6ff',acc2:'#00ffc6',wall:'linear-gradient(160deg,#001020,#003060)'},
+{name:'Forest',bg1:'#001a0a',bg2:'#003d1f',acc:'#22ff88',acc2:'#aaff22',wall:'linear-gradient(135deg,#001a0a,#003d1f)'},
+{name:'Sunset',bg1:'#1a0010',bg2:'#5a1a00',acc:'#ff7043',acc2:'#ffd54f',wall:'linear-gradient(180deg,#1a0010,#5a1a00 60%,#8a3a00)'},
+{name:'Fire',bg1:'#1a0500',bg2:'#7a1a00',acc:'#ff3d00',acc2:'#ffd600',wall:'repeating-radial-gradient(circle at 50% 100%, #ff3d0022 0 8px, transparent 8px 16px),linear-gradient(180deg,#1a0500,#7a1a00)'},
+{name:'Ice',bg1:'#020a1a',bg2:'#1a4a6a',acc:'#80f0ff',acc2:'#ffffff',wall:'linear-gradient(160deg,#020a1a,#1a4a6a)'},
+{name:'Cyberpunk',bg1:'#0a0012',bg2:'#1a0050',acc:'#ff00e5',acc2:'#00e5ff',wall:'linear-gradient(45deg,#0a0012,#1a0050)'},
+{name:'Royal Gold',bg1:'#100800',bg2:'#3a2600',acc:'#ffd700',acc2:'#ffaa00',wall:'linear-gradient(135deg,#100800,#3a2600)'},
+{name:'Midnight Blue',bg1:'#00061a',bg2:'#001a4a',acc:'#4d7fff',acc2:'#aaccff',wall:'radial-gradient(circle at 80% 10%, #4d7fff33, transparent 50%), linear-gradient(135deg,#00061a,#001a4a)'},
+{name:'Sakura',bg1:'#1a0014',bg2:'#4a1a3a',acc:'#ff9ecb',acc2:'#ffd1e8',wall:'radial-gradient(circle at 30% 30%, #ff9ecb33, transparent 60%), linear-gradient(135deg,#1a0014,#4a1a3a)'},
+{name:'Toxic Green',bg1:'#001a00',bg2:'#1a5a00',acc:'#39ff14',acc2:'#ccff00',wall:'linear-gradient(135deg,#001a00,#1a5a00)'},
+{name:'Galaxy',bg1:'#050014',bg2:'#14003a',acc:'#b388ff',acc2:'#7c4dff',wall:'radial-gradient(circle at 20% 30%, #b388ff33 0 20px, transparent 60%), radial-gradient(circle at 80% 70%, #7c4dff44 0 30px, transparent 60%), linear-gradient(135deg,#050014,#14003a)'},
+{name:'Lava',bg1:'#0a0000',bg2:'#3a0a00',acc:'#ff5a00',acc2:'#ffcc00',wall:'repeating-linear-gradient(0deg,#ff5a0011 0 4px,transparent 4px 10px),linear-gradient(180deg,#0a0000,#3a0a00)'},
+{name:'Ghost',bg1:'#0a0a0f',bg2:'#1a1a26',acc:'#9aa0b8',acc2:'#e0e4ff',wall:'linear-gradient(135deg,#0a0a0f,#1a1a26)'},
+{name:'Vampire',bg1:'#0d000a',bg2:'#2d0018',acc:'#e8006e',acc2:'#ff3b6e',wall:'radial-gradient(circle at 60% 20%, #e8006e22, transparent 55%), linear-gradient(135deg,#0d000a,#2d0018)'},
+{name:'Angel Light',bg1:'#00140f',bg2:'#0a3d33',acc:'#8ff5d8',acc2:'#ffffff',wall:'radial-gradient(circle at 50% 0%, #8ff5d833, transparent 55%), linear-gradient(180deg,#00140f,#0a3d33)'},
+{name:'Onyx',bg1:'#000000',bg2:'#111111',acc:'#ff5555',acc2:'#55ff55',wall:'linear-gradient(135deg,#000,#111)'}
+];
+const grid=document.getElementById('themeGrid');
+function applyTheme(t){
+  document.documentElement.style.setProperty('--bg1',t.bg1);
+  document.documentElement.style.setProperty('--bg2',t.bg2);
+  document.documentElement.style.setProperty('--acc',t.acc);
+  document.documentElement.style.setProperty('--acc2',t.acc2);
+  document.body.style.background=t.wall;
+  localStorage.setItem('stormTheme',t.name);
+  [...grid.children].forEach(b=>b.classList.toggle('on',b.dataset.name===t.name));
+}
+THEMES.forEach(t=>{
+  const b=document.createElement('div');
+  b.className='th';b.dataset.name=t.name;b.style.background=t.wall;
+  b.textContent=t.name;b.onclick=()=>applyTheme(t);
+  grid.appendChild(b);
+});
+const saved=localStorage.getItem('stormTheme');
+applyTheme(THEMES.find(t=>t.name===saved)||THEMES[0]);
+// 😈 Ember particles
+const cv=document.getElementById('embers'),ctx=cv.getContext('2d');let W,H;const P=[];
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}addEventListener('resize',rs);rs();
+function spawn(){P.push({x:Math.random()*W,y:H+10,r:Math.random()*3+1,vy:Math.random()*1.2+.4,vx:(Math.random()-.5)*.6,a:Math.random()*.6+.3,c:Math.random()>.5?'#ff3b3b':'#ff9500'})}
+function tick(){ctx.clearRect(0,0,W,H);if(P.length<40)spawn();for(let i=P.length-1;i>=0;i--){const p=P[i];p.y-=p.vy;p.x+=p.vx;ctx.globalAlpha=p.a;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fill();if(p.y<-20)P.splice(i,1)}ctx.globalAlpha=1;requestAnimationFrame(tick)}
+tick();
+</script>
 </body>
-  </html>
+                        </html>
