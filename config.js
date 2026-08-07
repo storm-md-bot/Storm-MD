@@ -1,23 +1,27 @@
 // ============================================
-// Storm-MD v2.0 — Advanced Config (ESM)
+// Storm-MD v2.0 — Config
+// 👑 Owner: Krishu | 😈 Demon God
 // ============================================
 
-// ⚡ BOT SETTINGS
 global.botName = 'Storm-MD';
 global.botVersion = '2.0.0';
-global.botEmoji = '⚡';
+global.botEmoji = '😈';
 global.prefix = '.';
 global.mode = 'public';
 
+// 📱 REAL DEVICE — Kali Linux / Ubuntu / etc.
 global.browserDescription = [
   'Chrome (Kali Linux)',
   'Firefox (Ubuntu)',
   '4.0.0'
 ];
 
-global.ownerNumbers = ['91XXXXXXXXXX'];
+// 👑 OWNER (hidden from public)
 global.ownerName = 'Krishu';
+global.ownerInstagram = '@demon_god__2009';
+global.ownerNumbers = process.env.OWNER_NUMBER ? [process.env.OWNER_NUMBER] : ['2250700000000'];
 
+// 🌐 API KEYS (env se bhi read hota hai)
 global.apiKeys = {
   gemini: process.env.GEMINI_API_KEY || 'AQ.Ab8RN6Lqz3GwHf1gJiZgTUDPZ09m7SF26so6CQ50fISJCUfl7g',
   openroute: process.env.OPENROUTER_API_KEY || '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',
@@ -28,6 +32,5 @@ global.apiKeys = {
 global.autoroastEnabled = true;
 global.autoReactEnabled = true;
 global.aiEnabled = true;
-
 global.respondTimeout = 5000;
 global.pairingTimeout = 60000;
