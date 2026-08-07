@@ -1,20 +1,21 @@
 // ============================================
-// Storm-MD v2.0 — REAL Pairing Code Generator
-// REAL 8-Digit Code — REAL Baileys 6.7.x
-// No Termux Needed — Works on Render/Railway
+// Storm-MD v2.0 — Pairing Code Generator (ESM)
 // ============================================
 
-const { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, Browsers, DisconnectReason } = require('@whiskeysockets/baileys');
-const { Boom } = require('@hapi/boom');
-const pino = require('pino');
-const fs = require('fs-extra');
-const path = require('path');
-const readline = require('readline');
-require('./config.js');
+import { makeWASocket, useMultiFileAuthState, fetchLatestBaileysVersion, Browsers, DisconnectReason } from '@whiskeysockets/baileys';
+import { Boom } from '@hapi/boom';
+import pino from 'pino';
+import fs from 'fs-extra';
+import path from 'path';
+import readline from 'readline';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import './config.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const sessionDir = path.join(__dirname, 'session');
-
-// CLEAN OLD SESSION
 fs.ensureDirSync(sessionDir);
 
 const rl = readline.createInterface({
@@ -32,14 +33,12 @@ async function generatePairing() {
   console.log('╚══════════════════════════════════╝');
   console.log('');
 
-  // ASK FOR PHONE NUMBER
   const number = await new Promise((resolve) => {
     rl.question('📱 Your WhatsApp Number (country code, NO + sign, NO spaces):\n> ', (answer) => {
       resolve(answer.trim());
     });
   });
 
-  // Validate number
   const phoneNumber = number.replace(/[^0-9]/g, '');
   if (phoneNumber.length < 10 || phoneNumber.length > 15) {
     console.log('❌ Invalid number! Must be 10-15 digits with country code.');
@@ -70,16 +69,12 @@ async function generatePairing() {
       generateHighQualityLinkPreview: false
     });
 
-    // Wait for socket to be ready
     await new Promise(resolve => setTimeout(resolve, 3000));
 
     if (!sock.authState.creds.registered) {
       console.log('🔄 Generating REAL 8-digit pairing code...\n');
       
-      // REQUEST REAL PAIRING CODE FROM WHATSAPP
       const pairingCode = await sock.requestPairingCode(phoneNumber);
-      
-      // FORMAT CODE AS 8 DIGITS: ABCD-EFGH
       const formattedCode = pairingCode.match(/.{1,4}/g)?.join('-') || pairingCode;
       
       console.log('');
@@ -100,14 +95,12 @@ async function generatePairing() {
       console.log('╚══════════════════════════════════════╝');
       console.log('');
 
-      // LISTEN FOR CONNECTION
       sock.ev.on('connection.update', async ({ connection, lastDisconnect }) => {
         if (connection === 'open') {
           console.log('✅ ✅ ✅ BOT CONNECTED SUCCESSFULLY! ✅ ✅ ✅');
           console.log(`🤖 ${global.botName} is now ONLINE`);
           console.log('💾 Session saved! You can now run: npm start');
           
-          // Save creds
           sock.ev.on('creds.update', saveCreds);
           
           rl.close();
@@ -124,7 +117,6 @@ async function generatePairing() {
         }
       });
 
-      // WAIT FOR CODE INPUT 
       console.log('⏳ Waiting for you to enter the code in WhatsApp...');
       console.log('⏳ This will auto-detect when connected.\n');
       
