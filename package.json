@@ -1,11 +1,10 @@
 {
   "name": "storm-md",
-  "version": "2.0.0",
-  "description": "Storm-MD - Advanced WhatsApp Multi-Device Bot with 1000+ Commands",
+  "version": "3.0.0",
+  "description": "Storm-MD v3.0 — Demon God Ultimate Edition",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "pair": "node pair.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
@@ -13,6 +12,8 @@
     "axios": "^1.7.7",
     "express": "^4.21.0",
     "fs-extra": "^11.2.0",
-    "pino": "^8.19.0"
+    "pino": "^8.19.0",
+    "telegraf": "^4.16.3",
+    "qrcode": "^1.5.3"
   }
 }
