@@ -1,8 +1,8 @@
 // ============================================
 // Storm-MD v2.0 — Demon God Edition
 // CommonJS + dynamic Baileys import
-// ✅ /pair web — No Termux
-// ✅ Pairing socket hi bot ban jata hai
+// ✅ /api/pair JSON (web UI) + /pair (HTML form)
+// ✅ Stale session cleanup → "couldn't link" fix
 // ============================================
 
 const express = require('express');
@@ -23,8 +23,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const commands = new Map();
 let pendingPair = null;
+global.botOnline = true;
 
 const hasSession = () => fs.existsSync(path.join(sessionDir, 'creds.json'));
+
+// 🧹 CLEAN STALE SESSION — repeated pairing collisions (couldn't link fix)
+function cleanStaleSession() {
+  if (hasSession()) return;
+  try {
+    const files = fs.readdirSync(sessionDir);
+    for (const f of files) {
+      if (f !== 'creds.json') fs.removeSync(path.join(sessionDir, f));
+    }
+    console.log('🧹 Stale session cleaned — fresh pairing ready');
+  } catch {}
+}
 
 function getText(msg) {
   if (!msg?.message) return '';
@@ -54,6 +67,7 @@ function loadCommands() {
 
 // ---------- SOCKET FACTORY ----------
 async function makeSocket() {
+  cleanStaleSession();
   const baileys = await import('@whiskeysockets/baileys');
   const { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, Browsers } = baileys;
   const { version } = await fetchLatestBaileysVersion();
@@ -86,7 +100,7 @@ function attachHandlers(sock, saveCreds) {
     const isGroup = from.endsWith('@g.us');
     const isChannel = from.endsWith('@newsletter');
 
-    // 😈 AUTO REACT — DM / GC / Channel (sab public)
+    // 😈 AUTO REACT — DM / GC / Channel
     if (global.autoReactEnabled) {
       const pool = ['⚡','🔥','💥','👋','🤖','💪','🚀','✨','🎯','✅','❤️','😊','👍'];
       try {
@@ -105,7 +119,7 @@ function attachHandlers(sock, saveCreds) {
       } catch {}
     }
 
-    // ⚡ COMMANDS — public mode: har koi (DM/GC/Channel) use kar sakta hai
+    // ⚡ COMMANDS — public mode (DM / GC / Channel sab me chalta hai)
     if (text.startsWith(global.prefix)) {
       const full = text.slice(global.prefix.length).trim();
       const [name, ...args] = full.split(/\s+/);
@@ -153,6 +167,36 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 
 app.get('/status', (req, res) => res.json({ online: !!global.botOnline, session: hasSession(), commands: commands.size }));
 
+// ============================================
+// ✅ JSON PAIRING API — Web UI isi ko call karta hai
+// ============================================
+app.post('/api/pair', async (req, res) => {
+  try {
+    const raw = String(req.body?.number || '').replace(/[^0-9]/g, '');
+    if (raw.length < 10 || raw.length > 15) {
+      return res.json({ error: 'Invalid number (10-15 digits). Country code ke saath, bina + ke. e.g. 2250564970037' });
+    }
+    if (hasSession()) {
+      return res.json({ error: 'Bot already linked hai! WhatsApp pe .menu bhejo ✅' });
+    }
+    cleanStaleSession();
+    const { sock, saveCreds } = await makeSocket();
+    pendingPair = raw;
+    await new Promise(r => setTimeout(r, 3500));
+    const code = await sock.requestPairingCode(raw);
+    const clean = String(code).replace(/-/g, '');
+    attachHandlers(sock, saveCreds);
+    console.log(`✅ Code generated for ${raw}`);
+    return res.json({ code: clean, number: raw, expires: 60 });
+  } catch (e) {
+    console.log('❌ /api/pair: ' + e.message);
+    return res.json({ error: (e.message || 'Pairing failed').slice(0, 200) + ' — 10 sec ruko, dobara try karo' });
+  }
+});
+
+// ============================================
+// HTML Pairing page (direct browser form)
+// ============================================
 app.get('/pair', (req, res) => {
   res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <title>😈 Storm-MD Pairing</title><style>
@@ -183,11 +227,11 @@ app.post('/pair', async (req, res) => {
     return res.send('<html><body style="background:#0b0b12;color:#fff;font-family:system-ui;text-align:center;padding-top:80px"><h3 style="color:#00ff88">✅ Bot already linked!</h3><p>WhatsApp pe .menu bhejo!</p></body></html>');
   }
   try {
+    cleanStaleSession();
     const { sock, saveCreds } = await makeSocket();
     pendingPair = raw;
     await new Promise(r => setTimeout(r, 3500));
     const code = await sock.requestPairingCode(raw);
-    // Pairing socket hi bot ban jayega
     attachHandlers(sock, saveCreds);
     res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>✅ Storm-MD Code</title><style>
