@@ -1,8 +1,8 @@
 // ============================================
 // Storm-MD v2.0 — Demon God Edition
-// ✅ FIXED: requestPairingCode connection delay (8-12s)
-// ✅ FIXED: fresh session per attempt (stale collision gone)
-// ✅ FIXED: code without dashes (8 digits real)
+// ✅ FIXED: 8-char code (letters + numbers) — dash sirf hatata hai
+// ✅ FIXED: connection wait before requestPairingCode
+// ✅ FIXED: fresh session cleanup
 // ✅ /api/pair JSON + /pair HTML
 // ============================================
 
@@ -28,19 +28,16 @@ global.botOnline = false;
 
 const hasSession = () => fs.existsSync(path.join(sessionDir, 'creds.json'));
 
-// 🧹 REAL FIX #4: stale session cleanup — hamesha fresh pairing
+// 🧹 Stale session cleanup — fresh pairing
 function cleanStaleSession() {
   if (hasSession()) return;
   try {
     const files = fs.readdirSync(sessionDir);
     let removed = 0;
     for (const f of files) {
-      if (f !== '.gitkeep') {
-        fs.removeSync(path.join(sessionDir, f));
-        removed++;
-      }
+      if (f !== '.gitkeep') { fs.removeSync(path.join(sessionDir, f)); removed++; }
     }
-    if (removed) console.log(`🧹 ${removed} stale session files removed — fresh pairing ready`);
+    if (removed) console.log(`🧹 ${removed} stale session files removed`);
   } catch {}
 }
 
@@ -85,43 +82,24 @@ async function makeSocket() {
     logger: pino({ level: 'silent' }),
     markOnlineOnConnect: true,
     syncFullHistory: false,
-    defaultQueryTimeoutMs: 0,          // REAL FIX from issue #390
+    defaultQueryTimeoutMs: 0,
     connectTimeoutMs: 60000,
     keepAliveIntervalMs: 25000
   });
   return { sock, saveCreds, DisconnectReason };
 }
 
-// ============================================================
-// 🔥 REAL FIX #1: WAIT until connection is ESTABLISHED
-// Baileys issue #1774 — code request se pehle 5-10s delay!
-// ============================================================
+// 🔥 WAIT for connection ready (Baileys fix)
 function waitForConnection(sock, timeoutMs = 20000) {
   return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      cleanup();
-      reject(new Error('Connection timeout — WhatsApp se connect nahi hua'));
-    }, timeoutMs);
+    const timer = setTimeout(() => { cleanup(); reject(new Error('Connection timeout')); }, timeoutMs);
     const onUpdate = ({ connection, lastDisconnect }) => {
-      if (connection === 'connecting') {
-        cleanup();
-        resolve();
-      }
-      if (connection === 'close') {
-        cleanup();
-        reject(new Error('Connection closed — ' + (new Boom(lastDisconnect?.error)?.output?.statusCode || 'unknown')));
-      }
-      if (connection === 'open') {
-        cleanup();
-        resolve();
-      }
+      if (connection === 'connecting') { cleanup(); resolve(); }
+      if (connection === 'close') { cleanup(); reject(new Error('Connection closed — ' + (new Boom(lastDisconnect?.error)?.output?.statusCode || 'unknown'))); }
+      if (connection === 'open') { cleanup(); resolve(); }
     };
-    const cleanup = () => {
-      clearTimeout(timer);
-      sock.ev.off('connection.update', onUpdate);
-    };
+    const cleanup = () => { clearTimeout(timer); sock.ev.off('connection.update', onUpdate); };
     sock.ev.on('connection.update', onUpdate);
-    // Fallback: agar pehle hi connected hai
     if (sock.ws?.readyState === 1) { cleanup(); resolve(); }
   });
 }
@@ -143,9 +121,7 @@ function attachHandlers(sock, saveCreds) {
     // 😈 AUTO REACT
     if (global.autoReactEnabled) {
       const pool = ['⚡','🔥','💥','👋','🤖','💪','🚀','✨','🎯','✅','❤️','😊','👍'];
-      try {
-        await sock.sendMessage(from, { react: { text: pool[Math.floor(Math.random() * pool.length)], key: msg.key } });
-      } catch {}
+      try { await sock.sendMessage(from, { react: { text: pool[Math.floor(Math.random() * pool.length)], key: msg.key } }); } catch {}
     }
 
     // 🔥 AUTO ROAST
@@ -182,7 +158,7 @@ function attachHandlers(sock, saveCreds) {
       const code = new Boom(lastDisconnect?.error)?.output?.statusCode;
       console.log(`❌ Disconnected (${code})`);
       if (code === 401) {
-        console.log('🚫 Logged out — pair again via /pair');
+        console.log('🚫 Logged out — pair again');
         try { fs.emptyDirSync(sessionDir); } catch {}
       }
       if (hasSession()) setTimeout(() => startBot(), 5000);
@@ -202,14 +178,13 @@ async function startBot() {
   }
 }
 
-// ---------- FRIENDLY ERROR ----------
 function friendlyError(e) {
   const m = (e?.message || '').toLowerCase();
-  if (m.includes('401') || m.includes('unauthorized')) return 'Session invalid — session/ folder clean karke dobara try karo';
-  if (m.includes('429') || m.includes('rate') || m.includes('too many')) return '⚠️ WhatsApp ne temporary block kiya hai — 15-30 min WAIT karo, phir try karo! (Baar-baar code mat lo)';
-  if (m.includes('conflict') || m.includes('close')) return 'Connection close — 10 sec wait karke dobara try karo (fresh code milega)';
+  if (m.includes('401') || m.includes('unauthorized')) return 'Session invalid — session folder clean karke dobara try karo';
+  if (m.includes('429') || m.includes('rate') || m.includes('too many')) return '⚠️ WhatsApp ne temporary block kiya — 15-30 min WAIT karo, phir 1 baar try karo!';
+  if (m.includes('conflict') || m.includes('close')) return 'Connection close — 10 sec wait karke dobara try karo';
   if (m.includes('not-registered')) return '❌ Ye number WhatsApp pe REGISTERED nahi hai!';
-  if (m.includes('timeout')) return 'Connection timeout — Render server slow hai, dobara try karo';
+  if (m.includes('timeout')) return 'Connection timeout — server slow hai, dobara try karo';
   return (e?.message || 'Unknown error').slice(0, 180);
 }
 
@@ -218,7 +193,7 @@ app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.ht
 app.get('/status', (req, res) => res.json({ online: !!global.botOnline, session: hasSession(), commands: commands.size }));
 
 // ============================================================
-// ✅ /api/pair — REAL FIXED PAIRING ENDPOINT (JSON)
+// ✅ /api/pair — JSON (Web UI) — REAL 8-CHAR CODE
 // ============================================================
 app.post('/api/pair', async (req, res) => {
   try {
@@ -230,39 +205,35 @@ app.post('/api/pair', async (req, res) => {
       return res.json({ error: 'Bot already linked hai! WhatsApp pe .menu bhejo ✅' });
     }
 
-    // 🔥 REAL FIX #4: fresh session hamesha
     cleanStaleSession();
-
     const { sock, saveCreds } = await makeSocket();
     pendingPair = raw;
 
-    // 🔥 REAL FIX #1: connection established hone ka WAIT (5-15 sec)
+    // 🔥 Connection ready hone ka wait
     await waitForConnection(sock, 20000);
     console.log('🔌 Connection ready — requesting pairing code...');
 
-    // 🔥 REAL FIX #2: registered check (Baileys docs)
     if (sock.authState?.creds?.registered) {
-      return res.json({ error: 'Session already registered — session/ folder delete karke dobara try karo' });
+      return res.json({ error: 'Session already registered — session folder delete karke dobara try karo' });
     }
 
-    // 🔥 REAL FIX #3: 8-10 sec extra delay (issue #1774 exact fix)
+    // 🔥 8 sec extra delay (Baileys issue #1774 fix)
     await new Promise(r => setTimeout(r, 8000));
 
-    // Code request — ab connection 100% ready hai
     const code = await sock.requestPairingCode(raw);
 
-    // 🔥 REAL FIX #5: dashes hatao — exactly 8 digits
-    const clean = String(code).replace(/[^0-9]/g, '').slice(0, 8);
+    // ✅ REAL FIX: SIRF dash/space hatana — LETTERS RAKHNA!
+    const clean = String(code).replace(/[- ]/g, '').toUpperCase();
+    console.log(`✅ REAL CODE for ${raw}: ${clean} (${clean.length} chars)`);
 
     attachHandlers(sock, saveCreds);
-    console.log(`✅ REAL CODE for ${raw}: ${clean}`);
 
     return res.json({
       code: clean,
-      display: clean.slice(0, 4) + '-' + clean.slice(4),  // WhatsApp display format
+      display: clean.slice(0, 4) + '-' + clean.slice(4),
       number: raw,
       expires: 60,
-      tip: 'BINA DASH ke dalo: ' + clean
+      tip: '8 characters (numbers + letters) — BINA DASH ke dalo: ' + clean
     });
   } catch (e) {
     console.log('❌ /api/pair: ' + e.message);
@@ -271,7 +242,7 @@ app.post('/api/pair', async (req, res) => {
 });
 
 // ============================================================
-// /pair HTML page (browser fallback)
+// /pair HTML (browser fallback)
 // ============================================================
 app.get('/pair', (req, res) => {
   res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
@@ -289,15 +260,17 @@ app.get('/pair', (req, res) => {
   <p>Country code + number (NO +, NO spaces)</p>
   <form method="POST" action="/pair">
     <input type="tel" name="number" placeholder="e.g. 2250564970037 (Côte d'Ivoire +225)" required>
-    <button type="submit">🔥 Generate REAL 8-Digit Code</button>
+    <button type="submit">🔥 Generate REAL 8-Character Code</button>
   </form>
   <div class="tip">⏳ Code aane me 20-40 sec lagte hain (connection ready hota hai)</div>
-  <div class="warn">⚠️ LINK FAIL HO TO:<br>
+  <div class="warn">⚠️ CODE = 8 CHARACTERS (numbers + letters dono) — e.g. W7WS6V2A<br><br>
+  LINK FAIL HO TO:<br>
   1. Linked Devices se 1-2 HATAO (max 4)<br>
-  2. Code BINA DASH dalo (8 digits)<br>
+  2. Code BINA DASH dalo (8 characters)<br>
   3. 60 sec ke andar dalo<br>
   4. Baar-baar mat try karo — 15-30 min WhatsApp block karta hai!<br>
-  5. 2-step verification OFF karo (temporarily)</div>
+  5. 2-step verification OFF karo (temporarily)<br>
+  6. VPN OFF karo</div>
   </div></body></html>`);
 });
 
@@ -316,7 +289,8 @@ app.post('/pair', async (req, res) => {
     await waitForConnection(sock, 20000);
     await new Promise(r => setTimeout(r, 8000));
     const code = await sock.requestPairingCode(raw);
-    const clean = String(code).replace(/[^0-9]/g, '').slice(0, 8);
+    // ✅ REAL FIX: SIRF dash hatana — letters rakhna
+    const clean = String(code).replace(/[- ]/g, '').toUpperCase();
     attachHandlers(sock, saveCreds);
     res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
     <title>✅ Storm-MD Code</title><style>
@@ -326,7 +300,7 @@ app.post('/pair', async (req, res) => {
     .steps{text-align:left;color:#ccc;font-size:14px;line-height:2}
     .warn{background:#ff3b3b22;border:1px solid #ff3b3b66;border-radius:8px;padding:10px;font-size:12px;color:#ff9b9b;margin-top:14px;text-align:left}
     </style></head><body><div class="card">
-    <h2 style="color:#00ff88">✅ REAL CODE READY</h2>
+    <h2 style="color:#00ff88">✅ REAL CODE READY (8 characters)</h2>
     <p style="color:#888">Number: <b style="color:#fff">${raw}</b></p>
     <div class="code">${clean.slice(0,4)}-${clean.slice(4)}</div>
     <div class="steps"><b>📱 BINA DASH DALO: ${clean}</b><br>
@@ -334,12 +308,12 @@ app.post('/pair', async (req, res) => {
     2. Settings → Linked Devices<br>
     3. Pahle 1-2 purane devices HATAO (max 4)<br>
     4. "Link a Device" → "Link with phone number"<br>
-    5. Code dalo: <b>${clean}</b> (bina dash, 8 digits)<br>
+    5. Code dalo: <b>${clean}</b> (bina dash, 8 characters)<br>
     6. ⏱️ 60 sec ke andar! ✅ Bot auto-connect!</div>
     <div class="warn">⚠️ Fail aaye to:<br>
     • 15-30 MIN WAIT karo (WhatsApp temporary block!)<br>
     • 2-step verification OFF karo (temporarily)<br>
-    • Dusra number try karo agar +225 blocked hai<br>
+    • VPN OFF karo<br>
     • WhatsApp app update karo</div>
     </div></body></html>`);
   } catch (e) {
